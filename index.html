@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>A Message for Elona</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        :root {
+            --rose: #ff4d6d;
+            --soft-white: #fffafa;
+            --text-color: #4a0e1c;
+            --dot-color: #ffccd5; 
+        }
+
+        body {
+            margin: 0; padding: 0; 
+            /* Pink Polka Dot Background */
+            background-color: var(--soft-white);
+            background-image: radial-gradient(var(--dot-color) 2px, transparent 2px);
+            background-size: 40px 40px;
+            
+            font-family: 'Optima', 'Georgia', serif;
+            display: flex; justify-content: center; align-items: center;
+            height: 100vh; overflow: hidden;
+        }
+
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #ffffff; z-index: 3000; display: flex;
+            flex-direction: column; justify-content: center; align-items: center;
+            transition: 2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        #overlay h1 { 
+            font-weight: 300; letter-spacing: 5px; color: var(--text-color);
+            margin-bottom: 40px; font-size: 2rem; text-transform: uppercase;
+        }
+
+        .enter-btn {
+            padding: 15px 40px; font-size: 1rem; background: none;
+            color: var(--text-color); border: 1px solid var(--text-color);
+            border-radius: 0; cursor: pointer; letter-spacing: 2px;
+            transition: 0.5s; position: relative;
+        }
+
+        .enter-btn:hover { background: var(--text-color); color: white; }
+
+        
+        .vid {
+            position: fixed; width: 160px; height: 260px; object-fit: cover;
+            border-radius: 10px; box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            z-index: 1; opacity: 0; transition: 3s ease; border: 1px solid #eee;
+        }
+        #vid1 { top: 30px; left: 30px; transform: rotate(-3deg); }
+        #vid2 { top: 30px; right: 30px; transform: rotate(3deg); }
+        #vid3 { bottom: 30px; left: 30px; transform: rotate(2deg); }
+        #vid4 { bottom: 30px; right: 30px; transform: rotate(-2deg); }
+
+        /* The Letter Box */
+        #card {
+            background: rgba(255, 255, 255, 0.85); 
+            backdrop-filter: blur(12px);
+            padding: 50px; border-radius: 5px; width: 80%; max-width: 450px;
+            z-index: 10; text-align: center; border: 1px solid rgba(0,0,0,0.05);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.05);
+        }
+
+        #scroll-box {
+            height: 280px; overflow-y: auto; text-align: left;
+            scrollbar-width: none; -ms-overflow-style: none;
+        }
+        #scroll-box::-webkit-scrollbar { display: none; }
+
+        #typewriter {
+            color: var(--text-color); font-size: 1.1rem; line-height: 1.9;
+            white-space: pre-wrap;
+        }
+
+        
+        .btn-container { 
+            margin-top: 30px; position: relative; height: 80px;
+            display: flex; justify-content: center; align-items: center; gap: 20px;
+        }
+
+        .btn {
+            padding: 12px 30px; cursor: pointer; font-size: 0.9rem;
+            letter-spacing: 1px; transition: 0.3s; border-radius: 2px;
+        }
+        #yesBtn { background: var(--text-color); color: white; border: none; }
+        #noBtn { background: transparent; color: var(--text-color); border: 1px solid var(--text-color); }
+
+        /* Falling Petals */
+        .petal {
+            position: fixed; top: -10%; pointer-events: none; z-index: 2;
+            animation: fall linear forwards; opacity: 0.7;
+        }
+        @keyframes fall { to { transform: translateY(110vh) rotate(360deg); } }
+
+        .photo-heart {
+            position: absolute; width: 180px; height: 180px;
+            clip-path: path('M90 175c-25-18-90-72-90-120 0-30 24-54 54-54 18 0 30 12 36 18 6-6 18-18 36-18 30 0 54 24 54 54 0 48-65 102-90 120z');
+            object-fit: cover; animation: floatUp 8s linear forwards; z-index: 100;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(110vh); opacity: 1; }
+            100% { transform: translateY(-120vh); opacity: 0; }
+        }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div id="overlay">
+        <h1>For Elona</h1>
+        <button class="enter-btn" onclick="startExperience()">BEGIN</button>
+    </div>
+
+    <audio id="music1" src="music1.mp3" loop></audio>
+    <audio id="music2" src="music2.mp3" loop></audio>
+
+    <video id="vid1" class="vid" src="vid1.mp4" autoplay muted loop playsinline></video>
+    <video id="vid2" class="vid" src="vid2.mp4" autoplay muted loop playsinline></video>
+    <video id="vid3" class="vid" src="vid1.mp4" autoplay muted loop playsinline></video>
+    <video id="vid4" class="vid" src="vid2.mp4" autoplay muted loop playsinline></video>
+
+    <div id="card">
+        <div id="scroll-box">
+            <div id="typewriter"></div>
+        </div>
+        <div id="btnGroup" class="hidden">
+            <div class="btn-container">
+                <button id="yesBtn" class="btn">YES</button>
+                <button id="noBtn" class="btn">NO</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const m1 = document.getElementById('music1');
+        const m2 = document.getElementById('music2');
+        const display = document.getElementById('typewriter');
+        const scrollBox = document.getElementById('scroll-box');
+        const btnGroup = document.getElementById('btnGroup');
+
+        const paragraph = "Hi Elona,\n\nI’ve been thinking about the time we’ve spent together lately, and I wanted to tell you how much I appreciate your presence. \n\nThere is a peace and a beauty in getting to know you that I didn't expect. It reminds me of Song of Solomon 4:7—'You are altogether beautiful, my darling; there is no flaw in you.'\n\nI’m grateful for the way our paths have crossed, and I’m excited to see what else is in store for us. With that in mind, I have a small question...";
+
+        function startExperience() {
+            document.getElementById('overlay').style.opacity = '0';
+            setTimeout(() => document.getElementById('overlay').remove(), 2000);
+            m1.play();
+            document.querySelectorAll('.vid').forEach(v => v.style.opacity = '1');
+            startPetals();
+            typeMessage(paragraph);
+        }
+
+        async function typeMessage(text) {
+            for (let char of text) {
+                display.innerHTML += char;
+                scrollBox.scrollTop = scrollBox.scrollHeight;
+                await new Promise(r => setTimeout(r, 75)); 
+            }
+            display.innerHTML += "<br><br><strong style='font-size:1.3rem;'>Will you be my Valentine?</strong>";
+            scrollBox.scrollTop = scrollBox.scrollHeight;
+            btnGroup.classList.remove('hidden');
+        }
+
+        function startPetals() {
+            const petals = ['🌸', '🌹', '🤍', '🌿'];
+            setInterval(() => {
+                const p = document.createElement('div');
+                p.className = 'petal';
+                p.innerHTML = petals[Math.floor(Math.random() * petals.length)];
+                p.style.left = Math.random() * 100 + 'vw';
+                p.style.animationDuration = (Math.random() * 5 + 5) + 's';
+                p.style.fontSize = (Math.random() * 10 + 20) + 'px';
+                document.body.appendChild(p);
+                setTimeout(() => p.remove(), 8000);
+            }, 600);
+        }
+
+        const no = document.getElementById('noBtn');
+        no.addEventListener('mouseover', () => {
+            no.style.position = 'fixed';
+            no.style.left = Math.random() * 80 + 'vw';
+            no.style.top = Math.random() * 80 + 'vh';
+        });
+
+        document.getElementById('yesBtn').addEventListener('click', () => {
+            m1.pause(); m2.play();
+            display.innerHTML = "<h1>I'm so glad. ❤️</h1><p style='font-style: italic;'>'I thank my God every time I remember you.' <br>(Philippians 1:3)</p>";
+            btnGroup.classList.add('hidden');
+            
+            const end = Date.now() + (10 * 1000);
+            (function frame() {
+              confetti({ particleCount: 3, angle: 60, spread: 55, origin: { x: 0 }, colors: ['#4a0e1c', '#ff4d6d'] });
+              confetti({ particleCount: 3, angle: 120, spread: 55, origin: { x: 1 }, colors: ['#4a0e1c', '#ff4d6d'] });
+              if (Date.now() < end) requestAnimationFrame(frame);
+            }());
+
+            const photos = ['pic1.jpeg', 'pic2.jpeg', 'pic3.jpeg'];
+            setInterval(() => {
+                const img = document.createElement('img');
+                img.src = photos[Math.floor(Math.random() * photos.length)];
+                img.className = 'photo-heart';
+                img.style.left = Math.random() * 90 + 'vw';
+                document.body.appendChild(img);
+                setTimeout(() => img.remove(), 8000);
+            }, 500);
+        });
+    </script>
+</body>
+</html>
